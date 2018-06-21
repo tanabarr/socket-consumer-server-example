@@ -32,7 +32,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	pb "github.com/tanabarr/socket-consumer-server-example/routeguide"
+	pb "github.com/tanabarr/socket-consumer-server-example/stockinfo"
 	"google.golang.org/grpc/testdata"
 )
 
@@ -44,15 +44,15 @@ var (
 )
 
 // printFeature gets the feature for the given point.
-func printFeature(client pb.RouteGuideClient, point *pb.Point) {
-	log.Printf("Getting feature for point (%d, %d)", point.Latitude, point.Longitude)
+func printStockPrice(client pb.StockInfoClient, ticker *pb.Ticker) {
+	log.Printf("Getting price for ticker (%v)", ticker.Name)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	feature, err := client.GetFeature(ctx, point)
+	price, err := client.GetStockPrice(ctx, ticker)
 	if err != nil {
-		log.Fatalf("%v.GetFeatures(_) = _, %v: ", client, err)
+		log.Fatalf("%v.GetStockPrice(_) = _, %v: ", client, err)
 	}
-	log.Println(feature)
+	log.Println(price)
 }
 
 // printFeatures lists all the features within the given bounding Rectangle.
@@ -170,13 +170,13 @@ func main() {
 		log.Fatalf("fail to dial: %v", err)
 	}
 	defer conn.Close()
-	client := pb.NewRouteGuideClient(conn)
+	client := pb.NewStockInfoClient(conn)
 
 	// Looking for a valid feature
-	printFeature(client, &pb.Point{Latitude: 409146138, Longitude: -746188906})
+	printStockPrice(client, &pb.Ticker{Name: "AAPL"})
 
 	// Feature missing.
-	printFeature(client, &pb.Point{Latitude: 0, Longitude: 0})
+	//printFeature(client, &pb.Point{Latitude: 0, Longitude: 0})
 
 	// Looking for features between 40, -75 and 42, -73.
 	//printFeatures(client, &pb.Rectangle{

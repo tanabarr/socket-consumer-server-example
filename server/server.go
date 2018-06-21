@@ -33,7 +33,7 @@ import (
 	"log"
 //	"math"
 	"net"
-	"sync"
+//	"sync"
 //	"time"
 
 	"golang.org/x/net/context"
@@ -44,33 +44,33 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	pb "github.com/tanabarr/socket-consumer-server-example/routeguide"
+	pb "github.com/tanabarr/socket-consumer-server-example/stockinfo"
 )
 
 var (
 	tls        = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
 	certFile   = flag.String("cert_file", "", "The TLS cert file")
 	keyFile    = flag.String("key_file", "", "The TLS key file")
-	jsonDBFile = flag.String("json_db_file", "testdata/route_guide_db.json", "A json file containing a list of features")
+	jsonDBFile = flag.String("json_db_file", "testdata/stock_info_db.json", "A json file containing a list of stock prices")
 	port       = flag.Int("port", 10000, "The server port")
 )
 
-type routeGuideServer struct {
-	savedFeatures []*pb.Feature // read-only after initialized
+type stockInfoServer struct {
+	savedPrices []*pb.Price  // read-only after initialized
 
-	mu         sync.Mutex // protects routeNotes
-	routeNotes map[string][]*pb.RouteNote
+	//mu         sync.Mutex // protects routeNotes
+	//routeNotes map[string][]*pb.RouteNote
 }
 
 // GetFeature returns the feature at the given point.
-func (s *routeGuideServer) GetFeature(ctx context.Context, point *pb.Point) (*pb.Feature, error) {
-	for _, feature := range s.savedFeatures {
-		if proto.Equal(feature.Location, point) {
-			return feature, nil
+func (s *stockInfoServer) GetStockPrice(ctx context.Context, ticker *pb.Ticker) (*pb.Price, error) {
+	for _, price := range s.savedPrices {
+		if proto.Equal(price.Stock, ticker) {
+			return price, nil
 		}
 	}
 	// No feature was found, return an unnamed feature
-	return &pb.Feature{Location: point}, nil
+	return &pb.Price{Stock: ticker}, nil
 }
 
 // ListFeatures lists all features contained within the given bounding Rectangle.
@@ -152,13 +152,13 @@ func (s *routeGuideServer) GetFeature(ctx context.Context, point *pb.Point) (*pb
 //}
 
 // loadFeatures loads features from a JSON file.
-func (s *routeGuideServer) loadFeatures(filePath string) {
+func (s *stockInfoServer) loadPrices(filePath string) {
 	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		log.Fatalf("Failed to load default features: %v", err)
+		log.Fatalf("Failed to load default prices: %v", err)
 	}
-	if err := json.Unmarshal(file, &s.savedFeatures); err != nil {
-		log.Fatalf("Failed to load default features: %v", err)
+	if err := json.Unmarshal(file, &s.savedPrices); err != nil {
+		log.Fatalf("Failed to load default prices: %v", err)
 	}
 }
 
@@ -206,9 +206,9 @@ func (s *routeGuideServer) loadFeatures(filePath string) {
 //	return fmt.Sprintf("%d %d", point.Latitude, point.Longitude)
 //}
 
-func newServer() *routeGuideServer {
-	s := &routeGuideServer{routeNotes: make(map[string][]*pb.RouteNote)}
-	s.loadFeatures(*jsonDBFile)
+func newServer() *stockInfoServer {
+	s := &stockInfoServer{} //routeNotes: make(map[string][]*pb.RouteNote)}
+	s.loadPrices(*jsonDBFile)
 	return s
 }
 
@@ -233,6 +233,6 @@ func main() {
 		opts = []grpc.ServerOption{grpc.Creds(creds)}
 	}
 	grpcServer := grpc.NewServer(opts...)
-	pb.RegisterRouteGuideServer(grpcServer, newServer())
+	pb.RegisterStockInfoServer(grpcServer, newServer())
 	grpcServer.Serve(lis)
 }
