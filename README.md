@@ -1,14 +1,16 @@
 # Description
-The route guide server and client demonstrate how to use grpc go libraries to
-perform unary, client streaming, server streaming and full duplex RPCs.
+Example go gRPC server which pulls stock information from socket.
 
-Please refer to [gRPC Basics: Go](https://grpc.io/docs/tutorials/basic/go.html) for more information.
+The socket consumer server and client demonstrate how to use grpc go libraries to
+use gRPC to retrieve stock information pulled from a UNIX\ domain socket.
 
-See the definition of the route guide service in routeguide/route_guide.proto.
+Reference:
+* [gRPC Basics: Go](https://grpc.io/docs/tutorials/basic/go.html)
+* [stock data using python](https://www.quora.com/Using-Python-whats-the-best-way-to-get-stock-data)
 
 # Run the sample code
-To compile and run the server, assuming you are in the root of the route_guide
-folder, i.e., .../examples/route_guide/, simply:
+To compile and run the server, assuming you are in the root of the socket-consumer-server-example
+folder, i.e., .../socket-consumer-server-example/, simply:
 
 ```sh
 $ go run server/server.go
